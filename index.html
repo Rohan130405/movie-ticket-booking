@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Booking</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f0f0;
+        }
+        .movie-card, .upcoming-movie-card {
+            margin: 20px 0;
+        }
+        .movie-card img, .upcoming-movie-card img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 9 / 16;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .movie-card .card-body, .upcoming-movie-card .card-body {
+            text-align: center;
+        }
+        .movie-card button, .upcoming-movie-card button {
+            margin: 5px 0;
+        }
+        .navbar-nav a {
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="bg-dark text-white text-center py-3">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                <a class="navbar-brand" href="#">Movie Booking</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="interested.html">View Interested Movies</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container mt-4">
+        <div class="form-group">
+            <select id="language-filter" class="form-control mb-3" onchange="filterMovies()">
+                <option value="all">All Languages</option>
+                <option value="telugu">Telugu</option>
+                <option value="hindi">Hindi</option>
+                <option value="english">English</option>
+                <option value="tamil">Tamil</option>
+            </select>
+            <select id="location-filter" class="form-control" onchange="filterMovies()">
+                <option value="all">All Locations</option>
+                <option value="hyderabad">Hyderabad</option>
+                <option value="karimnagar">Karimnagar</option>
+                <option value="warangal">Warangal</option>
+                <option value="khammam">Khammam</option>
+            </select>
+        </div>
+
+        <div class="row" id="movie-list">
+            <!-- Movie cards will be inserted here by JavaScript -->
+        </div>
+
+        <h2 class="mt-5">Upcoming Movies</h2>
+        <div class="row" id="upcoming-movie-list">
+            <!-- Upcoming movie cards will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const movies = [
+            { id: 1, title: 'RRR', language: 'telugu', locations: ['hyderabad', 'karimnagar'], img: 'rrr.avif' },
+            { id: 2, title: 'Baahubali', language: 'telugu', locations: ['hyderabad','karimnagar','khammam'], img: 'baahubali.avif' },
+            { id: 3, title: 'Pushpa', language: 'telugu', locations: ['hyderabad', 'warangal','karimnagar'], img: 'pushpa.avif' },
+            { id: 4, title: 'Dangal', language: 'hindi', locations: ['hyderabad'], img: 'dangal.avif' },
+            { id: 5, title: '3 Idiots', language: 'hindi', locations: ['hyderabad'], img: '3idiots.avif' },
+            { id: 6, title: 'Inception', language: 'english', locations: ['hyderabad'], img: 'inception.avif' },
+            { id: 7, title: 'Asuran', language: 'tamil', locations: ['hyderabad'], img: 'asuran.avif' },
+            { id: 8, title: 'K.G.F', language: 'telugu', locations: ['karimnagar','khammam','warangal','hyderabad'], img: 'kgf.avif' },
+            { id: 9, title: 'Mahanati', language: 'telugu', locations: ['karimnagar'], img: 'mahanati.avif' },
+            { id: 10, title: 'Krrish', language: 'hindi', locations: ['karimnagar','hyderbad'], img: 'krrish.avif' },
+            { id: 11, title: 'Chhichhore', language: 'hindi', locations: ['karimnagar','hyderabad'], img: 'chhichore.avif' },
+            { id: 12, title: 'Avengers', language: 'english', locations: ['warangal','hyderabad'], img: 'avengers.avif' },
+            { id: 13, title: 'Kabali', language: 'tamil', locations: ['warangal','hyderabad'], img: 'kabali.avif' },
+            { id: 14, title: 'Businessman', language: 'telugu', locations: ['khammam','hyderabad'], img: 'bussinessman.avif' },
+            { id: 15, title: 'Saaho', language: 'telugu', locations: ['khammam','hyderabad'], img: 'saaho.avif' },
+        ];
+
+        const upcomingMovies = [
+            { id: 16, title: 'Devara', language: 'Telugu', img: 'up1.avif' },
+            { id: 17, title: 'OG', language: 'Telugu', img: 'up2.avif' },
+            { id: 18, title: 'Double Ismart', language: 'Telugu', img: 'up3.avif' },
+            { id: 19, title: 'Thangalaan', language: 'Tamil, Telugu', img: 'up4.avif' },
+            { id: 20, title: 'Kanguva', language: 'Tamil, Telugu, Hindi', img: 'up5.avif' },
+            { id: 21, title: 'Lucky Bhasker', language: 'Telugu, Tamil, Malayalam', img: 'up6.avif' },
+        ];
+
+        function displayMovies(movieList) {
+            const movieListContainer = document.getElementById('movie-list');
+            movieListContainer.innerHTML = '';
+            movieList.forEach(movie => {
+                const movieCard = `
+                    <div class="col-md-4">
+                        <div class="card movie-card">
+                            <img src="${movie.img}" class="card-img-top" alt="${movie.title}">
+                            <div class="card-body">
+                                <h5 class="card-title">${movie.title}</h5>
+                                <p class="card-text">Language: ${movie.language}</p>
+                                <p class="card-text">Locations: ${movie.locations.join(', ')}</p>
+                                <button class="btn btn-success" onclick="bookMovie('${movie.title}')">Book</button>
+                                <button class="btn btn-warning" onclick="addToInterested('${movie.title}', '${movie.img}')">Interested</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                movieListContainer.innerHTML += movieCard;
+            });
+        }
+
+        function displayUpcomingMovies(movieList) {
+            const upcomingMovieListContainer = document.getElementById('upcoming-movie-list');
+            upcomingMovieListContainer.innerHTML = '';
+            movieList.forEach(movie => {
+                const movieCard = `
+                    <div class="col-md-4">
+                        <div class="card upcoming-movie-card">
+                            <img src="${movie.img}" class="card-img-top" alt="${movie.title}">
+                            <div class="card-body">
+                                <h5 class="card-title">${movie.title}</h5>
+                                <p class="card-text">Language: ${movie.language}</p>
+                                <button class="btn btn-warning" onclick="addToInterested('${movie.title}', '${movie.img}')">Interested</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                upcomingMovieListContainer.innerHTML += movieCard;
+            });
+        }
+
+        function filterMovies() {
+            const languageFilter = document.getElementById('language-filter').value;
+            const locationFilter = document.getElementById('location-filter').value;
+            
+            const filteredMovies = movies.filter(movie => {
+                return (languageFilter === 'all' || movie.language === languageFilter) &&
+                       (locationFilter === 'all' || movie.locations.includes(locationFilter));
+            });
+
+            displayMovies(filteredMovies);
+        }
+
+        function bookMovie(title) {
+            alert(`You have booked the movie: ${title}`);
+        }
+
+        function addToInterested(title, img) {
+            let interestedMovies = JSON.parse(localStorage.getItem('interestedMovies')) || [];
+            const alreadyInterested = interestedMovies.some(movie => movie.title === title);
+
+            if (alreadyInterested) {
+                alert(`${title} is already in your interested movies.`);
+                return;
+            }
+
+            interestedMovies.push({ title, img });
+            localStorage.setItem('interestedMovies', JSON.stringify(interestedMovies));
+            alert(`Added to your interested movies: ${title}`);
+        }
+
+        // Initial display of all movies and upcoming movies
+        displayMovies(movies);
+        displayUpcomingMovies(upcomingMovies);
+    </script>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p>&copy; 2024 Movie Ticket Booking. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
